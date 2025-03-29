@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SoundSpace | Interactive Audio Experience</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <div class="overlay"></div>
+    
+    <div class="cursor"></div>
+    <div class="cursor-ring"></div>
+    
+    <div class="ui">
+        <div class="header">
+            <div class="title">SoundSpace</div>
+            <div class="subtitle">Interactive Audio Experience</div>
+        </div>
+        
+        <div class="instructions">
+            Move your cursor to create sounds.<br>
+            <span>Click</span> to play notes.<br>
+            <span>X-axis</span> controls pitch, <span>Y-axis</span> controls timbre.
+        </div>
+        
+        <div class="info">
+            <div class="note-display" id="note-display">C4</div>
+            <div class="coordinates" id="coordinates">X: 0 Y: 0</div>
+        </div>
+    </div>
+    
+    <div class="controls">
+        <div class="control-item">
+            <div class="control-label">Sound</div>
+            <select id="sound-type">
+                <option value="sine">Sine</option>
+                <option value="square">Square</option>
+                <option value="triangle" selected>Triangle</option>
+                <option value="sawtooth">Sawtooth</option>
+            </select>
+        </div>
+        
+        <div class="control-item">
+            <div class="control-label">Volume</div>
+            <input type="range" min="0" max="1" step="0.01" value="0.5" id="volume">
+        </div>
+        
+        <div class="control-item">
+            <div class="control-label">Delay</div>
+            <input type="range" min="0" max="0.9" step="0.1" value="0" id="delay">
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="app.js"></script>
+    <script src="enhancements.js"></script>
+</body>
+</html>
