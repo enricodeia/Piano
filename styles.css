@@ -1,0 +1,505 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+body {
+    background-color: #000;
+    color: #fff;
+    min-height: 100vh;
+    overflow: hidden;
+    position: relative;
+    cursor: none;
+}
+
+#canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at center, transparent, rgba(0, 0, 0, 0.8));
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.7;
+}
+
+.cursor {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    z-index: 9999;
+    mix-blend-mode: difference;
+    transition: transform 0.1s ease, background 0.3s ease;
+}
+
+.cursor.active {
+    transform: translate(-50%, -50%) scale(1.5);
+    background: rgba(255, 255, 255, 0.8);
+}
+
+.cursor-ring {
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    z-index: 9998;
+    opacity: 0.5;
+    transition: all 0.2s ease;
+}
+
+.ui {
+    position: absolute;
+    z-index: 10;
+    pointer-events: none;
+}
+
+.header {
+    position: absolute;
+    top: 40px;
+    left: 40px;
+    z-index: 10;
+}
+
+.title {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    letter-spacing: -0.5px;
+}
+
+.subtitle {
+    font-size: 14px;
+    font-weight: 400;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.controls {
+    position: absolute;
+    bottom: 40px;
+    left: 40px;
+    display: flex;
+    gap: 20px;
+    z-index: 10;
+    pointer-events: auto;
+}
+
+.control-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.control-label {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+select, input[type="range"] {
+    background-color: rgba(255, 255, 255, 0.1);
+    border: none;
+    border-radius: 4px;
+    padding: 8px 12px;
+    font-size: 14px;
+    color: #fff;
+    outline: none;
+}
+
+select {
+    padding-right: 30px;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    cursor: pointer;
+}
+
+input[type="range"] {
+    -webkit-appearance: none;
+    width: 120px;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+    padding: 0;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #fff;
+    cursor: pointer;
+}
+
+.instructions {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    font-size: 16px;
+    color: rgba(255, 255, 255, 0.8);
+    line-height: 1.6;
+    max-width: 500px;
+    opacity: 0.8;
+    pointer-events: none;
+    z-index: 5;
+    user-select: none;
+}
+
+.instructions span {
+    display: inline-block;
+    padding: 3px 6px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    margin: 0 2px;
+}
+
+.info {
+    position: absolute;
+    bottom: 40px;
+    right: 40px;
+    text-align: right;
+    z-index: 10;
+}
+
+.note-display {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.note-display.visible {
+    opacity: 1;
+}
+
+.coordinates {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.particle {
+    position: absolute;
+    background: white;
+    border-radius: 50%;
+    pointer-events: none;
+    opacity: 0.8;
+    z-index: 5;
+}
+
+@keyframes fadeOut {
+    0% { opacity: 0.8; transform: scale(1) translate(0, 0); }
+    100% { opacity: 0; transform: scale(2) translate(var(--tx, 0), var(--ty, -30px)); }
+}
+
+/* Enhancement Styles */
+.octave-buttons {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.octave-buttons button {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.octave-buttons button:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+#current-octave {
+    min-width: 20px;
+    text-align: center;
+}
+
+.record-button {
+    background-color: rgba(255, 50, 50, 0.2);
+    border: none;
+    border-radius: 4px;
+    color: white;
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.record-button.recording {
+    background-color: rgba(255, 50, 50, 0.7);
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+.recording-time {
+    margin-left: 10px;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.6);
+    min-width: 50px;
+    display: inline-block;
+}
+
+.recording-controls {
+    position: fixed;
+    bottom: 100px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 8px;
+    padding: 15px;
+    z-index: 100;
+    display: none;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+}
+
+.recording-controls.visible {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+
+.playback-controls {
+    display: flex;
+    gap: 10px;
+}
+
+.playback-controls button {
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    border-radius: 4px;
+    color: white;
+    padding: 8px 16px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.playback-controls button:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.download-controls {
+    display: flex;
+    gap: 10px;
+}
+
+.download-controls button {
+    background: rgba(100, 255, 100, 0.2);
+    border: none;
+    border-radius: 4px;
+    color: white;
+    padding: 8px 16px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.download-controls button:hover {
+    background: rgba(100, 255, 100, 0.3);
+}
+
+.auto-play-control {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    margin-top: 20px;
+}
+
+.auto-play-control select {
+    width: 140px;
+}
+
+.auto-play-control button {
+    background: rgba(100, 255, 100, 0.2);
+    border: none;
+    border-radius: 4px;
+    color: white;
+    padding: 8px 16px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.auto-play-control button.playing {
+    background: rgba(255, 100, 100, 0.5);
+}
+
+.auto-play-control button:hover {
+    background: rgba(100, 255, 100, 0.3);
+}
+
+.tempo-control {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+#tempo-value {
+    min-width: 80px;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.info-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    backdrop-filter: blur(10px);
+}
+
+.modal-content {
+    background: rgba(20, 20, 30, 0.8);
+    border-radius: 12px;
+    padding: 30px;
+    max-width: 600px;
+    width: 80%;
+    color: white;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    text-align: center;
+}
+
+.modal-content h2 {
+    font-size: 28px;
+    margin-bottom: 8px;
+}
+
+.modal-content p {
+    color: rgba(255, 255, 255, 0.6);
+    margin-bottom: 24px;
+}
+
+.instruction-section {
+    text-align: left;
+    margin: 24px 0;
+}
+
+.instruction-section h3 {
+    font-size: 18px;
+    margin-bottom: 12px;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.instruction-section ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.instruction-section li {
+    padding: 8px 0;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.instruction-section li strong {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.start-button {
+    background: linear-gradient(to right, #00C9FF, #92FE9D);
+    border: none;
+    color: rgba(0, 0, 0, 0.8);
+    padding: 12px 30px;
+    border-radius: 50px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 20px;
+    transition: all 0.3s ease;
+}
+
+.start-button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 5px 15px rgba(0, 201, 255, 0.4);
+}
+
+.help-button {
+    position: fixed;
+    bottom: 40px;
+    right: 40px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    font-size: 18px;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.help-button:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+@media (max-width: 600px) {
+    .modal-content {
+        width: 90%;
+        padding: 20px;
+    }
+    
+    .controls {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .header {
+        top: 20px;
+        left: 20px;
+    }
+    
+    .info {
+        bottom: 20px;
+        right: 20px;
+    }
+    
+    .help-button {
+        bottom: 20px;
+        right: 20px;
+    }
+}
